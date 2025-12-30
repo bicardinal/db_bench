@@ -1,0 +1,95 @@
+qdrant
+{
+  "vectors": 1000000,
+  "dim": 128,
+  "queries": 10000,
+  "params": {
+    "M": 16,
+    "ef_construction": 200,
+    "ef_search": 64,
+    "seed": 123,
+    "k_base": -1
+  },
+  "build_latency": 12.472616307000862,
+  "search_avg_latency": 0.0015251445955097734,
+  "qps": 751.825314916983,
+  "search_wall_time": 15.458447256800355,
+  "recall@10": 0.99403
+}
+
+
+chroma
+{
+  "vectors": 1000000,
+  "dim": 128,
+  "queries": 10000,
+  "params": {
+    "M": 16,
+    "ef_construction": 200,
+    "ef_search": 64,
+    "seed": 123,
+    "k_base": -1
+  },
+  "build_latency": 116.64619407699865,
+  "search_avg_latency": 0.002367136424348937,
+  "qps": 426.9312474917521,
+  "search_wall_time": 23.97203613269958,
+  "recall@10": 0.96332
+}
+
+
+brinicle
+{
+  "vectors": 1000000,
+  "dim": 128,
+  "queries": 10000,
+  "params": {
+    "M": 16,
+    "ef_construction": 200,
+    "ef_search": 64,
+    "seed": 123,
+    "k_base": -1
+  },
+  "build_latency": 402.86064931500005,
+  "search_avg_latency": 0.000944534093096554,
+  "qps": 1064.1941897663078,
+  "search_wall_time": 9.608604582098996,
+  "recall@10": 0.96998
+}
+
+
+weaviate
+{
+  "vectors": 1000000,
+  "dim": 128,
+  "queries": 10000,
+  "params": {
+    "M": 16,
+    "ef_construction": 200,
+    "ef_search": 64,
+    "seed": 123
+  },
+  "build_latency": 81.0150689630027,
+  "search_avg_latency": 0.0018064309434265308,
+  "qps": 554.6444380236422,
+  "search_wall_time": 18.431012012200153,
+  "recall@10": 0.96291
+}
+
+milvus
+{
+  "vectors": 1000000,
+  "dim": 128,
+  "queries": 10000,
+  "params": {
+    "M": 16,
+    "ef_construction": 200,
+    "ef_search": 64,
+    "seed": 123
+  },
+  "build_latency": 211.3854252300007,
+  "search_avg_latency": 0.0022770716861666733,
+  "qps": 445.47370158623573,
+  "search_wall_time": 23.168999023200012,
+  "recall@10": 0.99466
+}

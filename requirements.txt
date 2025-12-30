@@ -1,0 +1,11 @@
+numpy
+h5py
+psutil
+requests
+lancedb
+pymilvus
+chromadb
+weaviate-client
+qdrant-client
+faiss-cpu
+hnswlib
