@@ -1,0 +1,100 @@
+memory=256mb
+cpus=1.0
+
+brinicle
+{
+    "vectors": 60000,
+    "dim": 784,
+    "queries": 10000,
+    "params": {
+        "M": 16,
+        "ef_construction": 200,
+        "ef_search": 64,
+        "seed": 123
+    },
+    "build_latency": 147.43518065399985,
+    "search_avg_latency": 0.0010184332376906241,
+    "search_p50_latency": 0.0008648156500385085,
+    "search_p95_latency": 0.001942546574973675,
+    "search_p99_latency": 0.002452346248981485,
+    "qps": 991.009517139007,
+    "search_wall_time": 10.359429659599845,
+    "recall@10": 0.99818,
+    "build_mem_peak_mb": 256.0,
+    "search_mem_peak_mb_avg": 224.953515625
+}
+
+
+
+chroma
+{
+    "vectors": 60000,
+    "dim": 784,
+    "queries": 10000,
+    "params": {
+        "M": 16,
+        "ef_construction": 200,
+        "ef_search": 64,
+        "seed": 123
+    },
+    "build_latency": 49.92843186199934,
+    "search_avg_latency": 0.0020085804657820885,
+    "search_p50_latency": 0.0017407759499292296,
+    "search_p95_latency": 0.003667390254940982,
+    "search_p99_latency": 0.004538597604081589,
+    "qps": 505.6677287155632,
+    "search_wall_time": 20.34144221440056,
+    "recall@10": 0.99807,
+    "build_mem_peak_mb": 256.203125,
+    "search_mem_peak_mb_avg": 255.88671875
+}
+
+
+
+weaviate(256mb crashed, 512mb worked)
+{
+    "vectors": 60000,
+    "dim": 784,
+    "queries": 10000,
+    "params": {
+        "M": 16,
+        "ef_construction": 200,
+        "ef_search": 64,
+        "seed": 123
+    },
+    "build_latency": 164.21959864400014,
+    "search_avg_latency": 0.004159100043842282,
+    "search_p50_latency": 0.0037246982997203304,
+    "search_p95_latency": 0.005661622190764317,
+    "search_p99_latency": 0.012497354732788159,
+    "qps": 240.58336333477504,
+    "search_wall_time": 42.140437016399844,
+    "recall@10": 0.99829,
+    "build_mem_peak_mb": 512.3359375,
+    "search_mem_peak_mb_avg": 512.044140625
+}
+
+
+
+qdrant(256mb crashed, 512mb worked)
+{
+    "vectors": 60000,
+    "dim": 784,
+    "queries": 10000,
+    "params": {
+        "M": 16,
+        "ef_construction": 200,
+        "ef_search": 64,
+        "seed": 123
+    },
+    "build_latency": 19.05671647700001,
+    "search_avg_latency": 0.002119860197658345,
+    "search_p50_latency": 0.0013336858995899093,
+    "search_p95_latency": 0.006671561089497116,
+    "search_p99_latency": 0.009659005845354842,
+    "qps": 581.0799060285683,
+    "search_wall_time": 21.40869030290123,
+    "recall@10": 0.99922,
+    "build_mem_peak_mb": 512.21484375,
+    "search_mem_peak_mb_avg": 277.928125
+}

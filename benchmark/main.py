@@ -12,7 +12,7 @@ import psutil
 import requests
 
 from aux.brinicle_client import VectorEngineClient
-
+from aux.memory_inspect import CgroupMemoryMonitor
 import lancedb
 
 import pymilvus
@@ -45,6 +45,12 @@ DATASETS = {
 		"filename": "gist-960-euclidean.hdf5"
 	}
 }
+
+container_names = {
+	"milvus": "milvus-standalone",
+	"brinicle": "brinicle_container"
+}
+
 
 DEFAULT_DATA_DIR = Path("./benchmark/data")
 K = 10
@@ -91,10 +97,9 @@ def run_benchmark_brinicle_build(X, args):
 	$ make docker-run
 	"""
 	args.efs = max(K, args.efs)
-	print(f"[build] Creating Brinicle(M={args.m}, efc={args.efc}, efs={args.efs}, k_base={args.k_base})")
+	print(f"[build] Creating Brinicle(M={args.m}, efc={args.efc}, efs={args.efs})")
 	idx_name = "brinicle_bench"
 	batch_size = 8192
-
 	client = VectorEngineClient()
 	client.create_index(
 		index_name=idx_name,
@@ -125,7 +130,6 @@ def run_benchmark_brinicle_search(Q, GT, args, build_latency, N, dim):
 	idx_name = "brinicle_bench"
 	client = VectorEngineClient()
 	client.load_index(idx_name)
-	# Queries
 	nq_total = min(args.max_queries, Q.shape[0])
 	rng = np.random.default_rng(args.seed)
 	idxs = np.arange(Q.shape[0])
@@ -140,12 +144,12 @@ def run_benchmark_brinicle_search(Q, GT, args, build_latency, N, dim):
 	labels = client.search(idx_name, queries[0], k=K, efs=args.efs)
 	print(f"[search] Running {nq_total} queries @ top-{K}...")
 	t1 = time.perf_counter()
-	total_q_time = 0.0
+	query_latencies = []
 	for i, v in enumerate(queries, start=0):
 		q0 = time.perf_counter()
-		labels = client.search(idx_name, v, k=K, efs=args.efs)  # must return list/iterable of IDs
+		labels = client.search(idx_name, v, k=K, efs=args.efs)
 		q1 = time.perf_counter()
-		total_q_time += (q1 - q0)
+		query_latencies.append(q1 - q0)
 		labels = [int(x) for x in labels] # back to int so that we can calculate recall
 		if len(labels) < K:
 			print("returned results is less than K")
@@ -154,10 +158,14 @@ def run_benchmark_brinicle_search(Q, GT, args, build_latency, N, dim):
 		print(i, end='\r')
 	t2 = time.perf_counter()
 
-	search_wall = t2 - t1  # end-to-end search window
-	avg_latency = total_q_time / nq_total
+	search_wall = t2 - t1
+	query_latencies = np.array(query_latencies)
+	avg_latency = np.mean(query_latencies)
+	p50_latency = np.percentile(query_latencies, 50)
+	p95_latency = np.percentile(query_latencies, 95)
+	p99_latency = np.percentile(query_latencies, 99)
+	total_q_time = np.sum(query_latencies)
 	qps = nq_total / total_q_time if total_q_time > 0 else float("inf")
-
 
 	recalls = compute_recalls(preds, GT[idxs], K)
 
@@ -165,11 +173,14 @@ def run_benchmark_brinicle_search(Q, GT, args, build_latency, N, dim):
 		"vectors": N,
 		"dim": dim,
 		"queries": int(nq_total),
-		"params": {"M": args.m, "ef_construction": args.efc, "ef_search": args.efs, "seed": args.seed, "k_base": args.k_base},
+		"params": {"M": args.m, "ef_construction": args.efc, "ef_search": args.efs, "seed": args.seed},
 		"build_latency": build_latency,
-		"search_avg_latency": avg_latency,            # seconds per query
-		"qps": qps,                                   # queries per second (measured on per-call time)
-		"search_wall_time": search_wall,              # total wall time (s) around search loop
+		"search_avg_latency": avg_latency,
+		"search_p50_latency": p50_latency,
+		"search_p95_latency": p95_latency,
+		"search_p99_latency": p99_latency,
+		"qps": qps,
+		"search_wall_time": search_wall,
 	}
 	results.update(recalls)
 
@@ -181,7 +192,7 @@ def run_benchmark_qdrant_build(X, args):
 	$ docker run -p 6333:6333 qdrant/qdrant
 	"""
 	args.efs = max(K, args.efs)
-	print(f"[build] Creating QdrantANN(M={args.m}, efc={args.efc}, efs={args.efs}, k_base={args.k_base})")
+	print(f"[build] Creating QdrantANN(M={args.m}, efc={args.efc}, efs={args.efs})")
 	client = QdrantClient(host="0.0.0.0", port="6333", grpc_port="6334", prefer_grpc=False)
 	if client.collection_exists(collection_name="bench"):
 		client.delete_collection(collection_name="bench")
@@ -227,7 +238,7 @@ def run_benchmark_qdrant_search(Q, GT, args, build_latency, N, dim):
 	print(f"[search] Running {nq_total} queries @ top-{K}...")
 
 	t1 = time.perf_counter()
-	total_q_time = 0.0
+	query_latencies = []
 	for i, v in enumerate(queries, start=0):
 		q0 = time.perf_counter()
 		labels = client.query_points(
@@ -236,13 +247,12 @@ def run_benchmark_qdrant_search(Q, GT, args, build_latency, N, dim):
 			search_params=SearchParams(hnsw_ef=args.efs, exact=False),
 			limit=K,
 		).points
-
 		q1 = time.perf_counter()
+		query_latencies.append(q1 - q0)
 		labels = np.asarray(
 			[int(p.id) for p in labels],
 			dtype=np.int64
 		)
-		total_q_time += (q1 - q0)
 		if len(labels) < K:
 			print("returned results is less than K")
 			labels = list(labels) + [-1] * (K - len(labels))
@@ -250,8 +260,13 @@ def run_benchmark_qdrant_search(Q, GT, args, build_latency, N, dim):
 		print(i, end='\r')
 	t2 = time.perf_counter()
 
-	search_wall = t2 - t1  # end-to-end search window
-	avg_latency = total_q_time / nq_total
+	search_wall = t2 - t1
+	query_latencies = np.array(query_latencies)
+	avg_latency = np.mean(query_latencies)
+	p50_latency = np.percentile(query_latencies, 50)
+	p95_latency = np.percentile(query_latencies, 95)
+	p99_latency = np.percentile(query_latencies, 99)
+	total_q_time = np.sum(query_latencies)
 	qps = nq_total / total_q_time if total_q_time > 0 else float("inf")
 
 
@@ -261,11 +276,14 @@ def run_benchmark_qdrant_search(Q, GT, args, build_latency, N, dim):
 		"vectors": N,
 		"dim": dim,
 		"queries": int(nq_total),
-		"params": {"M": args.m, "ef_construction": args.efc, "ef_search": args.efs, "seed": args.seed, "k_base": args.k_base},
+		"params": {"M": args.m, "ef_construction": args.efc, "ef_search": args.efs, "seed": args.seed},
 		"build_latency": build_latency,
-		"search_avg_latency": avg_latency,            # seconds per query
-		"qps": qps,                                   # queries per second (measured on per-call time)
-		"search_wall_time": search_wall,              # total wall time (s) around search loop
+		"search_avg_latency": avg_latency,
+		"search_p50_latency": p50_latency,
+		"search_p95_latency": p95_latency,
+		"search_p99_latency": p99_latency,
+		"qps": qps,
+		"search_wall_time": search_wall,
 	}
 	results.update(recalls)
 
@@ -277,7 +295,7 @@ def run_benchmark_chroma_build(X, args):
 	$ docker run -v ./chroma-data:/data -p 8000:8000 chromadb/chroma
 	"""
 	args.efs = max(K, args.efs)
-	print(f"[build] Creating ChromaDB(M={args.m}, efc={args.efc}, efs={args.efs}, k_base={args.k_base})")
+	print(f"[build] Creating ChromaDB(M={args.m}, efc={args.efc}, efs={args.efs})")
 	client = chromadb.HttpClient(host="localhost", port=8000)
 	try:
 		client.delete_collection(name="bench")
@@ -330,7 +348,7 @@ def run_benchmark_chroma_search(Q, GT, args, build_latency, N, dim):
 	print(f"[search] Running {nq_total} queries @ top-{K}...")
 	
 	t1 = time.perf_counter()
-	total_q_time = 0.0
+	query_latencies = []
 	for i, v in enumerate(queries, start=0):
 		q0 = time.perf_counter()
 		results = collection.query(
@@ -338,14 +356,11 @@ def run_benchmark_chroma_search(Q, GT, args, build_latency, N, dim):
 			n_results=K
 		)
 		q1 = time.perf_counter()
-
-		# extract IDs from results
+		query_latencies.append(q1 - q0)
 		labels = np.asarray(
 			[int(id_str) for id_str in results['ids'][0]],
 			dtype=np.int64
 		)
-		
-		total_q_time += (q1 - q0)
 		
 		if len(labels) < K:
 			print("returned results is less than K")
@@ -355,22 +370,30 @@ def run_benchmark_chroma_search(Q, GT, args, build_latency, N, dim):
 		print(i, end='\r')
 	
 	t2 = time.perf_counter()
-	
+
 	search_wall = t2 - t1
-	avg_latency = total_q_time / nq_total
+	query_latencies = np.array(query_latencies)
+	avg_latency = np.mean(query_latencies)
+	p50_latency = np.percentile(query_latencies, 50)
+	p95_latency = np.percentile(query_latencies, 95)
+	p99_latency = np.percentile(query_latencies, 99)
+	total_q_time = np.sum(query_latencies)
 	qps = nq_total / total_q_time if total_q_time > 0 else float("inf")
-	
+
 	recalls = compute_recalls(preds, GT[idxs], K)
-	
+
 	results = {
 		"vectors": N,
 		"dim": dim,
 		"queries": int(nq_total),
-		"params": {"M": args.m, "ef_construction": args.efc, "ef_search": args.efs, "seed": args.seed, "k_base": args.k_base},
+		"params": {"M": args.m, "ef_construction": args.efc, "ef_search": args.efs, "seed": args.seed},
 		"build_latency": build_latency,
-		"search_avg_latency": avg_latency,            # seconds per query
-		"qps": qps,                                   # queries per second (measured on per-call time)
-		"search_wall_time": search_wall,              # total wall time (s) around search loop
+		"search_avg_latency": avg_latency,
+		"search_p50_latency": p50_latency,
+		"search_p95_latency": p95_latency,
+		"search_p99_latency": p99_latency,
+		"qps": qps,
+		"search_wall_time": search_wall,
 	}
 	results.update(recalls)
 	return results
@@ -442,7 +465,7 @@ def run_benchmark_weaviate_search(Q, GT, args, build_latency, N, dim):
 
 		t1 = time.perf_counter()
 		total_q_time = 0.0
-
+		query_latencies = []
 		for i, v in enumerate(queries):
 			q0 = time.perf_counter()
 			response = collection.query.near_vector(
@@ -451,11 +474,8 @@ def run_benchmark_weaviate_search(Q, GT, args, build_latency, N, dim):
 				return_properties=["original_id"]
 			)
 			q1 = time.perf_counter()
-
-			# Extract IDs from Weaviate objects
+			query_latencies.append(q1 - q0)
 			labels = [obj.properties["original_id"] for obj in response.objects]
-
-			total_q_time += (q1 - q0)
 			if len(labels) < K:
 				labels = list(labels) + [-1] * (K - len(labels))
 
@@ -465,13 +485,17 @@ def run_benchmark_weaviate_search(Q, GT, args, build_latency, N, dim):
 		t2 = time.perf_counter()
 
 		search_wall = t2 - t1
-		avg_latency = total_q_time / nq_total
+		query_latencies = np.array(query_latencies)
+		avg_latency = np.mean(query_latencies)
+		p50_latency = np.percentile(query_latencies, 50)
+		p95_latency = np.percentile(query_latencies, 95)
+		p99_latency = np.percentile(query_latencies, 99)
+		total_q_time = np.sum(query_latencies)
 		qps = nq_total / total_q_time if total_q_time > 0 else float("inf")
 
 		recalls = compute_recalls(preds, GT[idxs], K)
 
 		results = {
-
 			"vectors": N,
 			"dim": dim,
 			"queries": int(nq_total),
@@ -483,6 +507,9 @@ def run_benchmark_weaviate_search(Q, GT, args, build_latency, N, dim):
 			},
 			"build_latency": build_latency,
 			"search_avg_latency": avg_latency,
+			"search_p50_latency": p50_latency,
+			"search_p95_latency": p95_latency,
+			"search_p99_latency": p99_latency,
 			"qps": qps,
 			"search_wall_time": search_wall,
 		}
@@ -554,7 +581,7 @@ def run_benchmark_milvus_search(Q, GT, args, build_latency, N, dim):
 
 	queries = Q[idxs].tolist()
 	preds = np.empty((nq_total, K), dtype=np.int64)
-	
+
 	search_params = {"metric_type": "L2", "params": {"ef": args.efs}}
 
 	collection.search(
@@ -566,8 +593,8 @@ def run_benchmark_milvus_search(Q, GT, args, build_latency, N, dim):
 
 	print(f"[search] Running {nq_total} queries @ top-{K}...")
 	t1 = time.perf_counter()
-	total_q_time = 0.0
 	
+	query_latencies = []
 	for i, v in enumerate(queries):
 		q0 = time.perf_counter()
 		res = collection.search(
@@ -577,21 +604,25 @@ def run_benchmark_milvus_search(Q, GT, args, build_latency, N, dim):
 			limit=K
 		)
 		q1 = time.perf_counter()
-		
-		total_q_time += (q1 - q0)
+		query_latencies.append(q1 - q0)
 		
 		labels = [hit.id for hit in res[0]]
-		
+
 		if len(labels) < K:
 			labels = labels + [-1] * (K - len(labels))
-		
+
 		preds[i, :] = np.asarray(labels[:K], dtype=np.int64)
 		print(f"Query {i+1}/{nq_total}", end='\r')
 
 	t2 = time.perf_counter()
 
 	search_wall = t2 - t1
-	avg_latency = total_q_time / nq_total
+	query_latencies = np.array(query_latencies)
+	avg_latency = np.mean(query_latencies)
+	p50_latency = np.percentile(query_latencies, 50)
+	p95_latency = np.percentile(query_latencies, 95)
+	p99_latency = np.percentile(query_latencies, 99)
+	total_q_time = np.sum(query_latencies)
 	qps = nq_total / total_q_time if total_q_time > 0 else float("inf")
 
 	recalls = compute_recalls(preds, GT[idxs], K)
@@ -608,6 +639,9 @@ def run_benchmark_milvus_search(Q, GT, args, build_latency, N, dim):
 		},
 		"build_latency": build_latency,
 		"search_avg_latency": avg_latency,
+		"search_p50_latency": p50_latency,
+		"search_p95_latency": p95_latency,
+		"search_p99_latency": p99_latency,
 		"qps": qps,
 		"search_wall_time": search_wall,
 	}
@@ -659,12 +693,12 @@ def run_benchmark_lancedb_search(Q, GT, args, build_latency, N, dim):
 	table.search([queries[0], queries[1]]).limit(K).to_list()
 	print(f"[search] Running {nq_total} queries @ top-{K}...")
 	t1 = time.perf_counter()
-	total_q_time = 0.0
+	query_latencies = []
 	for i, v in enumerate(queries, start=0):
 		q0 = time.perf_counter()
 		labels = table.search(v).nprobes(args.m).limit(K).to_list()  # must return list/iterable of IDs
 		q1 = time.perf_counter()
-		total_q_time += (q1 - q0)
+		query_latencies.append(q1 - q0)
 		labels = [x["id"] for x in labels]
 		if len(labels) < K:
 			labels = list(labels) + [-1] * (K - len(labels))
@@ -672,8 +706,13 @@ def run_benchmark_lancedb_search(Q, GT, args, build_latency, N, dim):
 		print(i, end='\r')
 	t2 = time.perf_counter()
 
-	search_wall = t2 - t1  # end-to-end search window
-	avg_latency = total_q_time / nq_total
+	search_wall = t2 - t1
+	query_latencies = np.array(query_latencies)
+	avg_latency = np.mean(query_latencies)
+	p50_latency = np.percentile(query_latencies, 50)
+	p95_latency = np.percentile(query_latencies, 95)
+	p99_latency = np.percentile(query_latencies, 99)
+	total_q_time = np.sum(query_latencies)
 	qps = nq_total / total_q_time if total_q_time > 0 else float("inf")
 
 	recalls = compute_recalls(preds, GT[idxs], K)
@@ -690,6 +729,9 @@ def run_benchmark_lancedb_search(Q, GT, args, build_latency, N, dim):
 		},
 		"build_latency": build_latency,
 		"search_avg_latency": avg_latency,
+		"search_p50_latency": p50_latency,
+		"search_p95_latency": p95_latency,
+		"search_p99_latency": p99_latency,
 		"qps": qps,
 		"search_wall_time": search_wall,
 	}
@@ -710,10 +752,8 @@ def main():
 	p.add_argument("--m", type=int, default=16)
 	p.add_argument("--efc", type=int, default=200, help="ef_construction")
 	p.add_argument("--efs", type=int, default=64, help="ef_search")
-	p.add_argument("--k-base", type=int, default=-1, help="k base")
 	p.add_argument("--max-queries", type=int, default=10000)
 	p.add_argument("--sample", action="store_true", help="randomly sample queries instead of first N")
-	p.add_argument("--insert-test", action="store_true", help="test insertion effect")
 	p.add_argument("--seed", type=int, default=123)
 	args = p.parse_args()
 
@@ -734,7 +774,8 @@ def main():
 	X, Q, GT = load_arrays(h5_path)
 	print(f"[load] X: {X.shape} float32, Q: {Q.shape} float32, GT: {GT.shape} int32")
 	print("[db] ", args.db)
-	direct_test = not args.insert_test
+	container_name = container_names.get(args.db, f"{args.db}_bench")
+	mon = CgroupMemoryMonitor(container_name=container_name, interval_s=0.01).start()
 	if args.db == "qdrant":
 		build_latency = run_benchmark_qdrant_build(X, args)
 	elif args.db == "brinicle":
@@ -749,12 +790,16 @@ def main():
 		build_latency = run_benchmark_lancedb_build(X, args)
 	else:
 		raise Exception("db name does not exist")
+	mon.stop()
+	build_peak_mb = mon.peak_bytes / (1024 * 1024)
 	N, dim = X.shape[0], X.shape[1]
 	del X
 
 	batch_results = None
 	try_size = 10
+	search_peak_avg = 0.0
 	for _ in range(try_size):
+		mon = CgroupMemoryMonitor(container_name=container_name, interval_s=0.01).start()
 		if args.db == "qdrant":
 			results = run_benchmark_qdrant_search(Q, GT, args, build_latency, N, dim)
 		elif args.db == "brinicle":
@@ -769,19 +814,28 @@ def main():
 			results = run_benchmark_lancedb_search(Q, GT, args, build_latency, N, dim)
 		else:
 			raise Exception("db name does not exist")
-
+		mon.stop()
+		search_peak_avg += mon.peak_bytes / (1024 * 1024)
 		if batch_results:
 			batch_results["search_avg_latency"] += results["search_avg_latency"]
+			batch_results["search_p50_latency"] += results["search_p50_latency"]
+			batch_results["search_p95_latency"] += results["search_p95_latency"]
+			batch_results["search_p99_latency"] += results["search_p99_latency"]
 			batch_results["qps"] += results["qps"]
 			batch_results["search_wall_time"] += results["search_wall_time"]
 		else:
 			batch_results = results
 
+	batch_results["build_mem_peak_mb"] = build_peak_mb
+	batch_results["search_mem_peak_mb_avg"] = search_peak_avg / try_size
 	batch_results["search_avg_latency"] /= try_size
+	batch_results["search_p50_latency"] /= try_size
+	batch_results["search_p95_latency"] /= try_size
+	batch_results["search_p99_latency"] /= try_size
 	batch_results["qps"] /= try_size
 	batch_results["search_wall_time"] /= try_size
 
-	print(json.dumps(batch_results, indent=2))
+	print(json.dumps(batch_results, indent=4))
 
 
 

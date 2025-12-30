@@ -47,12 +47,12 @@ Before running benchmarks, start the corresponding database server:
 
 ### Qdrant
 ```bash
-docker run -p 6333:6333 qdrant/qdrant
+docker run --rm --name qdrant_bench -p 6333:6333 qdrant/qdrant
 ```
 
 ### ChromaDB
 ```bash
-docker run -v ./chroma-data:/data -p 8000:8000 chromadb/chroma
+docker run --rm --name chroma_bench -v ./chroma-data:/data -p 8000:8000 chromadb/chroma
 ```
 
 ### Weaviate
@@ -61,12 +61,17 @@ Then, run this:
 ```bash
 docker-compose up -d
 ```
+Or, you could run this(specifically, for version 1.32.2):
+```bash
+docker run --rm --name weaviate_bench -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.32.2
+```
 
 ### Milvus
 ```bash
 curl -sfL https://raw.githubusercontent.com/milvus-io/milvus/master/scripts/standalone_embed.sh -o standalone_embed.sh
 bash standalone_embed.sh start
 ```
+To apply limitations, open the standalone_embed.sh file and add options to the docker.
 
 ### brinicle
 ```bash
@@ -76,6 +81,7 @@ bash build.sh
 make docker-build
 make docker-run
 ```
+To apply limitations, open the Makefile file and add options to under the docker-run command.
 
 ## Running Benchmarks
 
@@ -83,21 +89,22 @@ make docker-run
 
 **Database Benchmark:**
 ```bash
-python benchmark/main.py --db qdrant --dataset sift-128
+python -m benchmark.main --db qdrant --dataset sift-128
 ```
 
 **Engine Benchmark:**
 ```bash
 sudo cpupower -c 2 frequency-set -g performance
-taskset -c 2 python benchmark/embed_bench.py --engine faiss --dataset mnist-784
+taskset -c 2 python -m benchmark.embed_bench --engine faiss --dataset mnist-784
 ```
-To benchmark brinicle library:
+
+To benchmark brinicle engine:
 ```bash
 git clone https://github.com/bicardinal/brinicle.git
 cd brinicle
 bash build.sh
 ```
-Copy brinicle/\_brinicle.cpythons to the .db_bench directory.
+Copy brinicle/\_brinicle.cpythons to the ./db_bench directory.
 Then:
 ```bash
 sudo cpupower -c 2 frequency-set -g performance
@@ -122,7 +129,7 @@ taskset -c 2 python -m benchmark.embed_bench --engine brinicle --dataset mnist-7
 
 **Test Qdrant with GIST dataset:**
 ```bash
-python benchmark/main.py --db qdrant --dataset gist-960 --m 32 --efc 400 --efs 100
+python benchmark.main --db qdrant --dataset gist-960 --m 32 --efc 400 --efs 100
 ```
 
 **Test FAISS with Fashion-MNIST:**
@@ -132,57 +139,33 @@ python benchmark/embed_bench.py --engine faiss --dataset fashion-mnist-784 --m 1
 
 **Run with limited queries (faster testing):**
 ```bash
-python benchmark/main.py --db chroma --dataset sift-128 --max-queries 1000
+python -m benchmark.main --db chroma --dataset sift-128 --max-queries 1000
 ```
 
 ## Resource-Constrained Benchmarking
 
 To test performance under resource constraints, use Docker's resource limitation flags when starting database containers:
 
-### Memory-Limited Testing
-
 **Qdrant (2GB RAM limit):**
 ```bash
-docker run --memory="2g" -p 6333:6333 qdrant/qdrant
+docker run --rm --name qdrant_bench --memory="2g" --cpus="2.0" -p 6333:6333 qdrant/qdrant
 ```
 
 **ChromaDB (1GB RAM limit):**
 ```bash
-docker run --memory="1g" -v ./chroma-data:/data -p 8000:8000 chromadb/chroma
+docker run --rm --name chroma_bench --memory="2g" --cpus="2.0" -v ./chroma-data:/data -p 8000:8000 chromadb/chroma
 ```
 
 **Milvus (4GB RAM limit):**
 ```bash
-docker run --memory="4g" -p 19530:19530 milvusdb/milvus:latest
+docker run --rm --name milvus_bench --memory="2g" --cpus="2.0" -p 19530:19530 milvusdb/milvus:latest
 ```
 
-### CPU-Limited Testing
 
-**Qdrant (2 CPUs):**
-```bash
-docker run --cpus="2.0" -p 6333:6333 qdrant/qdrant
-```
-
-**ChromaDB (1 CPU):**
-```bash
-docker run --cpus="1.0" -v ./chroma-data:/data -p 8000:8000 chromadb/chroma
-```
-
-### Combined Constraints
-
-**Qdrant (2GB RAM, 2 CPUs):**
-```bash
-docker run --memory="2g" --cpus="2.0" -p 6333:6333 qdrant/qdrant
-```
-
-**ChromaDB (1GB RAM, 1 CPU):**
-```bash
-docker run --memory="1g" --cpus="1.0" -v ./chroma-data:/data -p 8000:8000 chromadb/chroma
-```
 
 Then run your benchmarks normally:
 ```bash
-python benchmark/main.py --db qdrant --dataset sift-128
+python benchmark.main --db brinicle --dataset sift-128
 ```
 
 ## Output
@@ -191,20 +174,20 @@ Benchmarks produce JSON results containing:
 
 ```json
 {
-  "vectors": 1000000,
-  "dim": 128,
-  "queries": 10000,
-  "params": {
-    "M": 16,
-    "ef_construction": 200,
-    "ef_search": 64,
-    "seed": 123
-  },
-  "build_latency": 245.678,
-  "search_avg_latency": 0.00234,
-  "qps": 427.35,
-  "search_wall_time": 23.456,
-  "recall@10": 0.9456
+    "vectors": 1000000,
+    "dim": 128,
+    "queries": 10000,
+    "params": {
+        "M": 16,
+        "ef_construction": 200,
+        "ef_search": 64,
+        "seed": 123
+    },
+    "build_latency": 245.678,
+    "search_avg_latency": 0.00234,
+    "qps": 427.35,
+    "search_wall_time": 23.456,
+    "recall@10": 0.9456
 }
 ```
 

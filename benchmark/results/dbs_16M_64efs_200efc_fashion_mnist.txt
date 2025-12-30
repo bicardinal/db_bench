@@ -1,95 +1,123 @@
---memory="512mb" --cpus="1.0"
-
-brinicle
-{
-  "vectors": 60000,
-  "dim": 784,
-  "queries": 10000,
-  "params": {
-    "M": 16,
-    "ef_construction": 200,
-    "ef_search": 64,
-    "seed": 123,
-  },
-  "build_latency": 143.85436157599997,
-  "search_avg_latency": 0.0008818882424809455,
-  "qps": 1148.3118878690468,
-  "search_wall_time": 8.970672687100068,
-  "recall@10": 0.99782
-}
-
+memory=512mb
+cpus=2.0
 
 qdrant
 {
-  "vectors": 60000,
-  "dim": 784,
-  "queries": 10000,
-  "params": {
-    "M": 16,
-    "ef_construction": 200,
-    "ef_search": 64,
-    "seed": 123,
-  },
-  "build_latency": 24.34558775200003,
-  "search_avg_latency": 0.006931304175777914,
-  "qps": 195.03010009229473,
-  "search_wall_time": 69.55803096829996,
-  "recall@10": 0.97671
+    "vectors": 60000,
+    "dim": 784,
+    "queries": 10000,
+    "params": {
+        "M": 16,
+        "ef_construction": 200,
+        "ef_search": 64,
+        "seed": 123,
+        "k_base": -1
+    },
+    "build_latency": 19.107286641999963,
+    "search_avg_latency": 0.002299330914392412,
+    "search_p50_latency": 0.001764427799571422,
+    "search_p95_latency": 0.004527245540175499,
+    "search_p99_latency": 0.008045868233919468,
+    "qps": 453.53885927924404,
+    "search_wall_time": 23.282099568699778,
+    "recall@10": 0.99782,
+    "build_mem_peak_mb": 512.1953125,
+    "search_mem_peak_mb_avg": 277.570703125
 }
 
 
 chroma
 {
-  "vectors": 60000,
-  "dim": 784,
-  "queries": 10000,
-  "params": {
-    "M": 16,
-    "ef_construction": 200,
-    "ef_search": 64,
-    "seed": 123,
-  },
-  "build_latency": 33.558944312000676,
-  "search_avg_latency": 0.002037749113789978,
-  "qps": 494.37203961640415,
-  "search_wall_time": 20.629487100899677,
-  "recall@10": 0.9978
+    "vectors": 60000,
+    "dim": 784,
+    "queries": 10000,
+    "params": {
+        "M": 16,
+        "ef_construction": 200,
+        "ef_search": 64,
+        "seed": 123,
+        "k_base": -1
+    },
+    "build_latency": 29.298735385000327,
+    "search_avg_latency": 0.0030848400641336044,
+    "search_p50_latency": 0.0030798850504652362,
+    "search_p95_latency": 0.004646178975981456,
+    "search_p99_latency": 0.005204528715883498,
+    "qps": 328.19539186571154,
+    "search_wall_time": 31.2323116440999,
+    "recall@10": 0.9978,
+    "build_mem_peak_mb": 512.0,
+    "search_mem_peak_mb_avg": 512.0109375
 }
 
 
 weaviate
 {
-  "vectors": 60000,
-  "dim": 784,
-  "queries": 10000,
-  "params": {
-    "M": 16,
-    "ef_construction": 200,
-    "ef_search": 64,
-    "seed": 123
-  },
-  "build_latency": 140.98157454600005,
-  "search_avg_latency": 0.003657553166107409,
-  "qps": 274.6696928267362,
-  "search_wall_time": 37.018411405700135,
-  "recall@10": 0.99771
+    "vectors": 60000,
+    "dim": 784,
+    "queries": 10000,
+    "params": {
+        "M": 16,
+        "ef_construction": 200,
+        "ef_search": 64,
+        "seed": 123
+    },
+    "build_latency": 45.38669040400055,
+    "search_avg_latency": 0.003559331079390796,
+    "search_p50_latency": 0.0033136124497104903,
+    "search_p95_latency": 0.005104486180371167,
+    "search_p99_latency": 0.010329635107351357,
+    "qps": 281.49058974286834,
+    "search_wall_time": 36.07193865589979,
+    "recall@10": 0.99786,
+    "build_mem_peak_mb": 512.1015625,
+    "search_mem_peak_mb_avg": 512.03125
 }
 
 
-milvus(ram usage=1024mb, instead of 512mb we used for previous databases)
+brinicle
 {
-  "vectors": 60000,
-  "dim": 784,
-  "queries": 10000,
-  "params": {
-    "M": 16,
-    "ef_construction": 200,
-    "ef_search": 64,
-    "seed": 123
-  },
-  "build_latency": 17.71047542100132,
-  "search_avg_latency": 0.003744444443072298,
-  "qps": 274.62785825125604,
-  "search_wall_time": 37.9435697445997,
-  "recall@10": 0.99885
+    "vectors": 60000,
+    "dim": 784,
+    "queries": 10000,
+    "params": {
+        "M": 16,
+        "ef_construction": 200,
+        "ef_search": 64,
+        "seed": 123,
+        "k_base": -1
+    },
+    "build_latency": 144.22267608399943,
+    "search_avg_latency": 0.0009265048673701857,
+    "search_p50_latency": 0.0007973204498284758,
+    "search_p95_latency": 0.001704927210134883,
+    "search_p99_latency": 0.0022662617000132747,
+    "qps": 1086.6362255717977,
+    "search_wall_time": 9.422308112900009,
+    "recall@10": 0.99782,
+    "build_mem_peak_mb": 469.84765625,
+    "search_mem_peak_mb_avg": 285.2046875
+}
+
+milvus(ram increased from 512 to 1024 because it crashed with 512mb ram)
+{
+    "vectors": 60000,
+    "dim": 784,
+    "queries": 10000,
+    "params": {
+        "M": 16,
+        "ef_construction": 200,
+        "ef_search": 64,
+        "seed": 123
+    },
+    "build_latency": 22.017145854000773,
+    "search_avg_latency": 0.002332768500701723,
+    "search_p50_latency": 0.002366715049947743,
+    "search_p95_latency": 0.0034160516349948005,
+    "search_p99_latency": 0.0040976867321160185,
+    "qps": 429.69838683721883,
+    "search_wall_time": 23.772103668900126,
+    "recall@10": 0.99887,
+    "build_mem_peak_mb": 1024.0,
+    "search_mem_peak_mb_avg": 779.76953125
 }
