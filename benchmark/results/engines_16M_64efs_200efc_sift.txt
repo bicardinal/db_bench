@@ -9,7 +9,6 @@ faiss
     "ef_construction": 200,
     "ef_search": 64,
     "seed": 123,
-    "k_base": -1
   },
   "build_latency": 279.5946108349999,
   "search_avg_latency": 0.00012494993956911458,
@@ -29,7 +28,6 @@ brinicle
     "ef_construction": 200,
     "ef_search": 64,
     "seed": 123,
-    "k_base": -1
   },
   "build_latency": 239.1760418490012,
   "search_avg_latency": 9.476701742101795e-05,
@@ -48,7 +46,6 @@ hnswlib
     "ef_construction": 200,
     "ef_search": 64,
     "seed": 123,
-    "k_base": -1
   },
   "build_latency": 243.2724732610004,
   "search_avg_latency": 8.820834399459273e-05,

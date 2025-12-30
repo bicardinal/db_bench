@@ -11,7 +11,6 @@ brinicle
     "ef_construction": 200,
     "ef_search": 64,
     "seed": 123,
-    "k_base": -1
   },
   "build_latency": 386.5960158129965,
   "search_avg_latency": 0.0008698617662263132,
@@ -30,7 +29,6 @@ qdrant
     "ef_construction": 200,
     "ef_search": 64,
     "seed": 123,
-    "k_base": -1
   },
   "build_latency": 13.298793956000736,
   "search_avg_latency": 0.20690042821409488,
@@ -85,7 +83,6 @@ chroma
     "ef_construction": 200,
     "ef_search": 64,
     "seed": 123,
-    "k_base": -1
   },
   "build_latency": 657.5158871359963,
   "search_avg_latency": 0.0029162798255535018,
