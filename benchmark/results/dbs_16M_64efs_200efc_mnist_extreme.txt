@@ -98,3 +98,26 @@ qdrant(256mb crashed, 512mb worked)
     "build_mem_peak_mb": 512.21484375,
     "search_mem_peak_mb_avg": 277.928125
 }
+
+milvus(256mb crashed, 512mb worked)
+{
+    "vectors": 60000,
+    "dim": 784,
+    "queries": 10000,
+    "params": {
+        "M": 16,
+        "ef_construction": 200,
+        "ef_search": 64,
+        "seed": 123
+    },
+    "build_latency": 22.124531247998675,
+    "search_avg_latency": 0.0024587759562871717,
+    "search_p50_latency": 0.002321182199739269,
+    "search_p95_latency": 0.0042221094401793365,
+    "search_p99_latency": 0.008145098520806643,
+    "qps": 430.5205005625322,
+    "search_wall_time": 24.999714102399594,
+    "recall@10": 0.99803,
+    "build_mem_peak_mb": 512.0,
+    "search_mem_peak_mb_avg": 481.9265625
+}

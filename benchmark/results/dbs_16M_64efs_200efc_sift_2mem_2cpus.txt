@@ -1,5 +1,6 @@
 memory=2g
 cpus=2.0
+dataset=sift
 
 qdrant
 {

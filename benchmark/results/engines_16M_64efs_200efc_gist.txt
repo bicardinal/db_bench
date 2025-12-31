@@ -1,0 +1,62 @@
+faiss:
+{
+  "vectors": 1000000,
+  "dim": 960,
+  "queries": 1000,
+  "params": {
+    "M": 16,
+    "ef_construction": 200,
+    "ef_search": 64,
+    "seed": 123
+  },
+  "build_latency": 872.273346394999,
+  "search_avg_latency": 0.00033542188419651215,
+  "search_p50_latency": 0.0003434645004745107,
+  "search_p95_latency": 0.0004083588512003189,
+  "search_p99_latency": 0.0004454929502571758,
+  "qps": 2981.323207670715,
+  "search_wall_time": 0.33916431610032305,
+  "recall@10": 0.7727
+}
+
+hnswlib:
+{
+  "vectors": 1000000,
+  "dim": 960,
+  "queries": 1000,
+  "params": {
+    "M": 16,
+    "ef_construction": 200,
+    "ef_search": 64,
+    "seed": 123
+  },
+  "build_latency": 1032.7069776360004,
+  "search_avg_latency": 0.0004083952891975059,
+  "search_p50_latency": 0.0003965144996982417,
+  "search_p95_latency": 0.0004695277999417158,
+  "search_p99_latency": 0.0004990984089636185,
+  "qps": 2450.4073048427936,
+  "search_wall_time": 0.4125703379000697,
+  "recall@10": 0.7562
+}
+
+brinicle
+{
+  "vectors": 1000000,
+  "dim": 960,
+  "queries": 1000,
+  "params": {
+    "M": 16,
+    "ef_construction": 200,
+    "ef_search": 64,
+    "seed": 123
+  },
+  "build_latency": 1138.478658224998,
+  "search_avg_latency": 0.0004942723640771875,
+  "search_p50_latency": 0.00044979900121688843,
+  "search_p95_latency": 0.0008484687481541181,
+  "search_p99_latency": 0.0015485811420148808,
+  "qps": 2023.5992761456887,
+  "search_wall_time": 0.5005636178004351,
+  "recall@10": 0.7702
+}

@@ -1,4 +1,3 @@
-
 faiss
 {
   "vectors": 1000000,
@@ -8,17 +7,19 @@ faiss
     "M": 16,
     "ef_construction": 200,
     "ef_search": 64,
-    "seed": 123,
+    "seed": 123
   },
-  "build_latency": 279.5946108349999,
-  "search_avg_latency": 0.00012494993956911458,
-  "qps": 8003.22380963459,
-  "search_wall_time": 1.2846372953001264,
-  "recall@10": 0.97043
+  "build_latency": 237.28241067400086,
+  "search_avg_latency": 9.212770681060646e-05,
+  "search_p50_latency": 9.516699901723769e-05,
+  "search_p95_latency": 0.00011519210047481464,
+  "search_p99_latency": 0.0001271172294946155,
+  "qps": 10857.432172912495,
+  "search_wall_time": 0.9700891672002399,
+  "recall@10": 0.96999
 }
 
-
-brinicle
+hnswlib:
 {
   "vectors": 1000000,
   "dim": 128,
@@ -27,16 +28,20 @@ brinicle
     "M": 16,
     "ef_construction": 200,
     "ef_search": 64,
-    "seed": 123,
+    "seed": 123
   },
-  "build_latency": 239.1760418490012,
-  "search_avg_latency": 9.476701742101795e-05,
-  "qps": 10554.191903159188,
-  "search_wall_time": 0.9975216289003583,
-  "recall@10": 0.96998
+  "build_latency": 241.30080168899985,
+  "search_avg_latency": 9.34123931382601e-05,
+  "search_p50_latency": 9.218999912263826e-05,
+  "search_p95_latency": 0.00011036619971491745,
+  "search_p99_latency": 0.00011952906057558722,
+  "qps": 10711.855416482276,
+  "search_wall_time": 0.9673997208998116,
+  "recall@10": 0.96364
 }
 
-hnswlib
+
+brinicle:
 {
   "vectors": 1000000,
   "dim": 128,
@@ -45,11 +50,14 @@ hnswlib
     "M": 16,
     "ef_construction": 200,
     "ef_search": 64,
-    "seed": 123,
+    "seed": 123
   },
-  "build_latency": 243.2724732610004,
-  "search_avg_latency": 8.820834399459273e-05,
-  "qps": 11336.851160252276,
-  "search_wall_time": 0.9130859468998096,
-  "recall@10": 0.96337
+  "build_latency": 243.74980264700207,
+  "search_avg_latency": 0.00010276935789242998,
+  "search_p50_latency": 0.00010105050023412332,
+  "search_p95_latency": 0.00013756674907199336,
+  "search_p99_latency": 0.00017092573692934832,
+  "qps": 9730.646597221934,
+  "search_wall_time": 1.0787098586995854,
+  "recall@10": 0.96989
 }
