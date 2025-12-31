@@ -81,7 +81,7 @@ bash build.sh
 make docker-build
 make docker-run
 ```
-To apply limitations, open the Makefile file and add options to under the docker-run command.
+To apply limitations, open the Makefile file and add options under the docker-run command.
 
 ## Running Benchmarks
 
@@ -95,19 +95,28 @@ python -m benchmark.main --db qdrant --dataset sift-128
 **Engine Benchmark:**
 ```bash
 sudo cpupower -c 2 frequency-set -g performance
+```
+```bash
 taskset -c 2 python -m benchmark.embed_bench --engine faiss --dataset mnist-784
+
 ```
 
 To benchmark brinicle engine:
 ```bash
 git clone https://github.com/bicardinal/brinicle.git
+```
+```bash
 cd brinicle
+```
+```bash
 bash build.sh
 ```
 Copy brinicle/\_brinicle.cpythons to the ./db_bench directory.
 Then:
 ```bash
 sudo cpupower -c 2 frequency-set -g performance
+```
+```bash
 taskset -c 2 python -m benchmark.embed_bench --engine brinicle --dataset mnist-784
 ```
 
@@ -181,27 +190,28 @@ Benchmarks produce JSON results containing:
         "M": 16,
         "ef_construction": 200,
         "ef_search": 64,
-        "seed": 123
+        "seed": 123,
     },
-    "build_latency": 245.678,
-    "search_avg_latency": 0.00234,
-    "qps": 427.35,
-    "search_wall_time": 23.456,
-    "recall@10": 0.9456
+    "build_latency": 14.114603558000454,
+    "search_avg_latency": 0.00456954234834042,
+    "search_p50_latency": 0.00304584990017247,
+    "search_p95_latency": 0.010294178170233863,
+    "search_p99_latency": 0.02453205891317521,
+    "qps": 599.2187040654981,
+    "search_wall_time": 45.92995607909997,
+    "recall@10": 0.9945,
+    "build_mem_peak_mb": 1986.828125,
+    "search_mem_peak_mb_avg": 1480.989453125
 }
 ```
 
 **Metrics explained:**
 - `build_latency`: Time to build the index (seconds)
 - `search_avg_latency`: Average time per query (seconds)
+- `search_p50/95/99_latency`: Search stability latency
 - `qps`: Queries per second
 - `search_wall_time`: Total time for all queries (seconds)
 - `recall@10`: Proportion of true neighbors found in top-10 results
+- `build_mem_peak_mb`: Build RAM peak
+- `search_mem_peak_mb_avg`: Search RAM peak
 
-
-## Troubleshooting
-
-**Memory issues during benchmarking:**
-- Reduce `--max-queries` parameter
-- Use smaller datasets (mnist-784 or fashion-mnist-784)
-- Increase Docker memory allocation
