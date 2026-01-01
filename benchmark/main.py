@@ -11,6 +11,8 @@ import h5py
 import psutil
 import requests
 
+from pathlib import Path
+
 from aux.brinicle_client import VectorEngineClient
 from aux.memory_inspect import CgroupMemoryMonitor
 import lancedb
@@ -322,7 +324,7 @@ def run_benchmark_chroma_build(X, args):
 			ids=batch_ids,
 			embeddings=batch_embeddings
 		)
-	
+
 	build_latency = time.perf_counter() - t0
 	print(f"[build] Done in {build_latency:.3f}s.")
 	return build_latency
@@ -346,7 +348,7 @@ def run_benchmark_chroma_search(Q, GT, args, build_latency, N, dim):
 		n_results=K
 	)
 	print(f"[search] Running {nq_total} queries @ top-{K}...")
-	
+
 	t1 = time.perf_counter()
 	query_latencies = []
 	for i, v in enumerate(queries, start=0):
@@ -361,14 +363,14 @@ def run_benchmark_chroma_search(Q, GT, args, build_latency, N, dim):
 			[int(id_str) for id_str in results['ids'][0]],
 			dtype=np.int64
 		)
-		
+
 		if len(labels) < K:
 			print("returned results is less than K")
 			labels = list(labels) + [-1] * (K - len(labels))
-		
+
 		preds[i, :] = np.asarray(labels[:K], dtype=np.int64)
 		print(i, end='\r')
-	
+
 	t2 = time.perf_counter()
 
 	search_wall = t2 - t1
@@ -561,7 +563,7 @@ def run_benchmark_milvus_build(X, args):
 	collection.create_index(field_name="embedding", index_params=index_params)
 
 	collection.load()
-	
+
 	build_latency = time.perf_counter() - t0
 	print(f"[build] Done in {build_latency:.3f}s.")
 	return build_latency
@@ -593,7 +595,7 @@ def run_benchmark_milvus_search(Q, GT, args, build_latency, N, dim):
 
 	print(f"[search] Running {nq_total} queries @ top-{K}...")
 	t1 = time.perf_counter()
-	
+
 	query_latencies = []
 	for i, v in enumerate(queries):
 		q0 = time.perf_counter()
@@ -605,7 +607,7 @@ def run_benchmark_milvus_search(Q, GT, args, build_latency, N, dim):
 		)
 		q1 = time.perf_counter()
 		query_latencies.append(q1 - q0)
-		
+
 		labels = [hit.id for hit in res[0]]
 
 		if len(labels) < K:
@@ -742,7 +744,6 @@ def run_benchmark_lancedb_search(Q, GT, args, build_latency, N, dim):
 
 def main():
 	process = psutil.Process(os.getpid())
-
 	p = argparse.ArgumentParser(description="Benchmark vector databases on ANN datasets")
 	p.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
 	p.add_argument("--dataset", type=str, default="sift-128", 
@@ -761,7 +762,6 @@ def main():
 	data_dir = args.data_dir
 	data_dir.mkdir(parents=True, exist_ok=True)
 	h5_path = data_dir / dataset_config["filename"]
-
 	download_if_needed(dataset_config["url"], h5_path)
 
 	with h5py.File(h5_path, "r") as src:
@@ -774,7 +774,9 @@ def main():
 	X, Q, GT = load_arrays(h5_path)
 	print(f"[load] X: {X.shape} float32, Q: {Q.shape} float32, GT: {GT.shape} int32")
 	print("[db] ", args.db)
+
 	container_name = container_names.get(args.db, f"{args.db}_bench")
+
 	mon = CgroupMemoryMonitor(container_name=container_name, interval_s=0.01).start()
 	if args.db == "qdrant":
 		build_latency = run_benchmark_qdrant_build(X, args)
@@ -792,14 +794,16 @@ def main():
 		raise Exception("db name does not exist")
 	mon.stop()
 	build_peak_mb = mon.peak_bytes / (1024 * 1024)
+
 	N, dim = X.shape[0], X.shape[1]
 	del X
 
-	batch_results = None
 	try_size = 10
+	batch_results = None
 	search_peak_avg = 0.0
-	for _ in range(try_size):
+	for trial in range(try_size):
 		mon = CgroupMemoryMonitor(container_name=container_name, interval_s=0.01).start()
+
 		if args.db == "qdrant":
 			results = run_benchmark_qdrant_search(Q, GT, args, build_latency, N, dim)
 		elif args.db == "brinicle":
@@ -814,8 +818,10 @@ def main():
 			results = run_benchmark_lancedb_search(Q, GT, args, build_latency, N, dim)
 		else:
 			raise Exception("db name does not exist")
+
 		mon.stop()
 		search_peak_avg += mon.peak_bytes / (1024 * 1024)
+
 		if batch_results:
 			batch_results["search_avg_latency"] += results["search_avg_latency"]
 			batch_results["search_p50_latency"] += results["search_p50_latency"]
@@ -826,6 +832,7 @@ def main():
 		else:
 			batch_results = results
 
+	# Average the results
 	batch_results["build_mem_peak_mb"] = build_peak_mb
 	batch_results["search_mem_peak_mb_avg"] = search_peak_avg / try_size
 	batch_results["search_avg_latency"] /= try_size
@@ -835,7 +842,29 @@ def main():
 	batch_results["qps"] /= try_size
 	batch_results["search_wall_time"] /= try_size
 
-	print(json.dumps(batch_results, indent=4))
+	output_dir = Path("benchmark/point_results")
+	output_dir.mkdir(parents=True, exist_ok=True)
+
+	base_filename = f"dbs_{args.db}_{args.dataset}_{args.m}m_{args.efc}efc_{args.efs}efs"
+	json_path = output_dir / f"{base_filename}.json"
+
+	output_data = {
+		"database": args.db,
+		"dataset": args.dataset,
+		"m": args.m,
+		"ef_search": args.efs,
+		"ef_construction": args.efc,
+		"build_latency": build_latency,
+		"build_mem_peak_mb": build_peak_mb,
+		"results": batch_results
+	}
+
+	with open(json_path, 'w') as f:
+		json.dump(output_data, f, indent=4)
+	print(f"\n[save] Results saved to {json_path}")
+
+
+	print(json.dumps(output_data, indent=4))
 
 
 

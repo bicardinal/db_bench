@@ -1,5 +1,6 @@
 memory=512mb
 cpus=2.0
+dataset=fashion mnist
 
 qdrant
 {
@@ -99,7 +100,7 @@ brinicle
     "search_mem_peak_mb_avg": 285.2046875
 }
 
-milvus(ram increased from 512 to 1024 because it crashed with 512mb ram)
+milvus(ram increased from 512 to 1024 because it crashed with 512mb ram) (ExitCode=137 OOMKilled=true)
 {
     "vectors": 60000,
     "dim": 784,

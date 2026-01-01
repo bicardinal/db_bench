@@ -94,7 +94,7 @@ python -m benchmark.main --db qdrant --dataset sift-128
 
 **Engine Benchmark:**
 ```bash
-sudo cpupower -c 2 frequency-set -g performance
+cpupower -c 2 frequency-set -g performance
 ```
 ```bash
 taskset -c 2 python -m benchmark.embed_bench --engine faiss --dataset mnist-784
@@ -114,7 +114,7 @@ bash build.sh
 Copy brinicle/\_brinicle.cpythons to the ./db_bench directory.
 Then:
 ```bash
-sudo cpupower -c 2 frequency-set -g performance
+cpupower -c 2 frequency-set -g performance
 ```
 ```bash
 taskset -c 2 python -m benchmark.embed_bench --engine brinicle --dataset mnist-784
@@ -183,25 +183,34 @@ Benchmarks produce JSON results containing:
 
 ```json
 {
-    "vectors": 1000000,
-    "dim": 128,
-    "queries": 10000,
-    "params": {
-        "M": 16,
-        "ef_construction": 200,
-        "ef_search": 64,
-        "seed": 123,
-    },
-    "build_latency": 14.114603558000454,
-    "search_avg_latency": 0.00456954234834042,
-    "search_p50_latency": 0.00304584990017247,
-    "search_p95_latency": 0.010294178170233863,
-    "search_p99_latency": 0.02453205891317521,
-    "qps": 599.2187040654981,
-    "search_wall_time": 45.92995607909997,
-    "recall@10": 0.9945,
-    "build_mem_peak_mb": 1986.828125,
-    "search_mem_peak_mb_avg": 1480.989453125
+    "database": "brinicle",
+    "dataset": "mnist-784",
+    "m": 16,
+    "ef_search": 256,
+    "ef_construction": 200,
+    "build_latency": 146.75613483099733,
+    "build_mem_peak_mb": 449.05078125,
+    "results": {
+        "vectors": 60000,
+        "dim": 784,
+        "queries": 10000,
+        "params": {
+            "M": 16,
+            "ef_construction": 200,
+            "ef_search": 256,
+            "seed": 123
+        },
+        "build_latency": 146.75613483099733,
+        "search_avg_latency": 0.0015094422017701435,
+        "search_p50_latency": 0.0013791280500299763,
+        "search_p95_latency": 0.0025316946043312774,
+        "search_p99_latency": 0.0032200705625800774,
+        "qps": 663.8943612200715,
+        "search_wall_time": 15.300123300500854,
+        "recall@10": 0.99982,
+        "build_mem_peak_mb": 449.05078125,
+        "search_mem_peak_mb_avg": 263.958203125
+    }
 }
 ```
 
@@ -215,3 +224,12 @@ Benchmarks produce JSON results containing:
 - `build_mem_peak_mb`: Build RAM peak
 - `search_mem_peak_mb_avg`: Search RAM peak
 
+
+**How to check OOMKilled?**
+```bash
+docker inspect <container-name> --format 'Status={{.State.Status}} ExitCode={{.State.ExitCode}} OOMKilled={{.State.OOMKilled}} Error={{.State.Error}} FinishedAt={{.State.FinishedAt}}'
+```
+If the previous command raised an error, the other option is to do:
+```bash
+dmesg -T | egrep -i "oom|killed process|out of memory" | tail -n 50
+```

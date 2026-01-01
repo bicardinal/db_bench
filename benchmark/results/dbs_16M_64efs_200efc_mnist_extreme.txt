@@ -51,7 +51,7 @@ chroma
 
 
 
-weaviate(256mb crashed, 512mb worked)
+weaviate(256mb crashed, 512mb worked, OOMKilled)
 {
     "vectors": 60000,
     "dim": 784,
@@ -76,7 +76,7 @@ weaviate(256mb crashed, 512mb worked)
 
 
 
-qdrant(256mb crashed, 512mb worked)
+qdrant(256mb crashed, 512mb worked, OOMKilled)
 {
     "vectors": 60000,
     "dim": 784,
@@ -99,7 +99,7 @@ qdrant(256mb crashed, 512mb worked)
     "search_mem_peak_mb_avg": 277.928125
 }
 
-milvus(256mb crashed, 512mb worked)
+milvus(256mb crashed, 512mb worked, OOMKilled)
 {
     "vectors": 60000,
     "dim": 784,
