@@ -1,0 +1,30 @@
+{
+    "database": "chroma",
+    "dataset": "sift-128",
+    "m": 16,
+    "ef_search": 32,
+    "ef_construction": 200,
+    "build_latency": 229.54807385000095,
+    "build_mem_peak_mb": 1706.24609375,
+    "results": {
+        "vectors": 1000000,
+        "dim": 128,
+        "queries": 10000,
+        "params": {
+            "M": 16,
+            "ef_construction": 200,
+            "ef_search": 32,
+            "seed": 123
+        },
+        "build_latency": 229.54807385000095,
+        "search_avg_latency": 0.0019305005652132602,
+        "search_p50_latency": 0.001967000399781682,
+        "search_p95_latency": 0.0028506121551436074,
+        "search_p99_latency": 0.0033324998568004965,
+        "qps": 520.2210437506798,
+        "search_wall_time": 19.560971037400122,
+        "recall@10": 0.9033800000000001,
+        "build_mem_peak_mb": 1706.24609375,
+        "search_mem_peak_mb_avg": 1707.955078125
+    }
+}

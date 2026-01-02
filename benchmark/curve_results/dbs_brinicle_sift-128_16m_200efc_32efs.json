@@ -1,0 +1,30 @@
+{
+    "database": "brinicle",
+    "dataset": "sift-128",
+    "m": 16,
+    "ef_search": 32,
+    "ef_construction": 200,
+    "build_latency": 386.40362431500034,
+    "build_mem_peak_mb": 1553.52734375,
+    "results": {
+        "vectors": 1000000,
+        "dim": 128,
+        "queries": 10000,
+        "params": {
+            "M": 16,
+            "ef_construction": 200,
+            "ef_search": 32,
+            "seed": 123
+        },
+        "build_latency": 386.40362431500034,
+        "search_avg_latency": 0.0007930015307508257,
+        "search_p50_latency": 0.0006864195500838832,
+        "search_p95_latency": 0.0014953051598649832,
+        "search_p99_latency": 0.002021820430019034,
+        "qps": 1268.143527838627,
+        "search_wall_time": 8.082831899600205,
+        "recall@10": 0.91463,
+        "build_mem_peak_mb": 1553.52734375,
+        "search_mem_peak_mb_avg": 982.9828125
+    }
+}

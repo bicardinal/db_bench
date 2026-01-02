@@ -1,0 +1,30 @@
+{
+    "database": "weaviate",
+    "dataset": "sift-128",
+    "m": 16,
+    "ef_search": 256,
+    "ef_construction": 200,
+    "build_latency": 812.4449362479995,
+    "build_mem_peak_mb": 4096.0,
+    "results": {
+        "vectors": 1000000,
+        "dim": 128,
+        "queries": 10000,
+        "params": {
+            "M": 16,
+            "ef_construction": 200,
+            "ef_search": 256,
+            "seed": 123
+        },
+        "build_latency": 812.4449362479995,
+        "search_avg_latency": 0.003918220908592511,
+        "search_p50_latency": 0.003823170799842046,
+        "search_p95_latency": 0.005057721155012586,
+        "search_p99_latency": 0.005503464152003291,
+        "qps": 255.22152724803277,
+        "search_wall_time": 39.729329145499925,
+        "recall@10": 0.9972700000000001,
+        "build_mem_peak_mb": 4096.0,
+        "search_mem_peak_mb_avg": 3579.995703125
+    }
+}

@@ -1,0 +1,30 @@
+{
+    "database": "qdrant",
+    "dataset": "sift-128",
+    "m": 16,
+    "ef_search": 128,
+    "ef_construction": 200,
+    "build_latency": 14.467436986000394,
+    "build_mem_peak_mb": 1854.45703125,
+    "results": {
+        "vectors": 1000000,
+        "dim": 128,
+        "queries": 10000,
+        "params": {
+            "M": 16,
+            "ef_construction": 200,
+            "ef_search": 128,
+            "seed": 123
+        },
+        "build_latency": 14.467436986000394,
+        "search_avg_latency": 0.004392650701149651,
+        "search_p50_latency": 0.0026478906000193094,
+        "search_p95_latency": 0.010019126409915773,
+        "search_p99_latency": 0.027255645142983675,
+        "qps": 630.1974876122742,
+        "search_wall_time": 44.12954123679992,
+        "recall@10": 0.9952729999999999,
+        "build_mem_peak_mb": 1854.45703125,
+        "search_mem_peak_mb_avg": 1469.896484375
+    }
+}

@@ -1,0 +1,30 @@
+{
+    "database": "milvus",
+    "dataset": "fashion-mnist-784",
+    "m": 16,
+    "ef_search": 64,
+    "ef_construction": 200,
+    "build_latency": 22.017145854000773,
+    "build_mem_peak_mb": 1024.0,
+    "results": {
+        "vectors": 60000,
+        "dim": 784,
+        "queries": 10000,
+        "params": {
+            "M": 16,
+            "ef_construction": 200,
+            "ef_search": 64,
+            "seed": 123
+        },
+        "build_latency": 22.017145854000773,
+        "search_avg_latency": 0.002332768500701723,
+        "search_p50_latency": 0.002366715049947743,
+        "search_p95_latency": 0.0034160516349948005,
+        "search_p99_latency": 0.0040976867321160185,
+        "qps": 429.69838683721883,
+        "search_wall_time": 23.772103668900126,
+        "recall@10": 0.99887,
+        "build_mem_peak_mb": 1024.0,
+        "search_mem_peak_mb_avg": 779.76953125
+    }
+}

@@ -1,0 +1,31 @@
+{
+    "database": "chroma",
+    "dataset": "fashion-mnist-784",
+    "m": 16,
+    "ef_search": 64,
+    "ef_construction": 200,
+    "build_latency": 29.298735385000327,
+    "build_mem_peak_mb": 512.0,
+    "results": {
+        "vectors": 60000,
+        "dim": 784,
+        "queries": 10000,
+        "params": {
+            "M": 16,
+            "ef_construction": 200,
+            "ef_search": 64,
+            "seed": 123,
+            "k_base": -1
+        },
+        "build_latency": 29.298735385000327,
+        "search_avg_latency": 0.0030848400641336044,
+        "search_p50_latency": 0.0030798850504652362,
+        "search_p95_latency": 0.004646178975981456,
+        "search_p99_latency": 0.005204528715883498,
+        "qps": 328.19539186571154,
+        "search_wall_time": 31.2323116440999,
+        "recall@10": 0.9978,
+        "build_mem_peak_mb": 512.0,
+        "search_mem_peak_mb_avg": 512.0109375
+    }
+}

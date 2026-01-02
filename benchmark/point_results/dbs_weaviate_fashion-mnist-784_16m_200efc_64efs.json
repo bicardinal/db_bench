@@ -1,0 +1,30 @@
+{
+    "database": "weaviate",
+    "dataset": "fashion-mnist-784",
+    "m": 16,
+    "ef_search": 64,
+    "ef_construction": 200,
+    "build_latency": 45.38669040400055,
+    "build_mem_peak_mb": 512.1015625,
+    "results": {
+        "vectors": 60000,
+        "dim": 784,
+        "queries": 10000,
+        "params": {
+            "M": 16,
+            "ef_construction": 200,
+            "ef_search": 64,
+            "seed": 123
+        },
+        "build_latency": 45.38669040400055,
+        "search_avg_latency": 0.003559331079390796,
+        "search_p50_latency": 0.0033136124497104903,
+        "search_p95_latency": 0.005104486180371167,
+        "search_p99_latency": 0.010329635107351357,
+        "qps": 281.49058974286834,
+        "search_wall_time": 36.07193865589979,
+        "recall@10": 0.99786,
+        "build_mem_peak_mb": 512.1015625,
+        "search_mem_peak_mb_avg": 512.03125
+    }
+}

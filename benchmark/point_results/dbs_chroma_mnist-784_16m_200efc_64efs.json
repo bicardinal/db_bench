@@ -1,0 +1,30 @@
+{
+    "database": "chroma",
+    "dataset": "mnist-784",
+    "m": 16,
+    "ef_search": 64,
+    "ef_construction": 200,
+    "build_latency": 49.92843186199934,
+    "build_mem_peak_mb": 256.203125,
+    "results": {
+        "vectors": 60000,
+        "dim": 784,
+        "queries": 10000,
+        "params": {
+            "M": 16,
+            "ef_construction": 200,
+            "ef_search": 64,
+            "seed": 123
+        },
+        "build_latency": 49.92843186199934,
+        "search_avg_latency": 0.0020085804657820885,
+        "search_p50_latency": 0.0017407759499292296,
+        "search_p95_latency": 0.003667390254940982,
+        "search_p99_latency": 0.004538597604081589,
+        "qps": 505.6677287155632,
+        "search_wall_time": 20.34144221440056,
+        "recall@10": 0.99807,
+        "build_mem_peak_mb": 256.203125,
+        "search_mem_peak_mb_avg": 255.88671875
+    }
+}

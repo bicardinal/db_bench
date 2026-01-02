@@ -1,0 +1,30 @@
+{
+    "database": "brinicle",
+    "dataset": "fashion-mnist-784",
+    "m": 16,
+    "ef_search": 64,
+    "ef_construction": 200,
+    "build_latency": 19.107286641999963,
+    "build_mem_peak_mb": 512.1953125,
+    "results": {
+        "vectors": 60000,
+        "dim": 784,
+        "queries": 10000,
+        "params": {
+            "M": 16,
+            "ef_construction": 200,
+            "ef_search": 64,
+            "seed": 123
+        },
+        "build_latency": 19.107286641999963,
+        "search_avg_latency": 0.002299330914392412,
+        "search_p50_latency": 0.001764427799571422,
+        "search_p95_latency": 0.004527245540175499,
+        "search_p99_latency": 0.008045868233919468,
+        "qps": 453.53885927924404,
+        "search_wall_time": 23.282099568699778,
+        "recall@10": 0.99782,
+        "build_mem_peak_mb": 512.1953125,
+        "search_mem_peak_mb_avg": 277.570703125
+    }
+}

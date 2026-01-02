@@ -1,0 +1,30 @@
+{
+    "database": "milvus",
+    "dataset": "sift-128",
+    "m": 16,
+    "ef_search": 128,
+    "ef_construction": 200,
+    "build_latency": 211.23485670900027,
+    "build_mem_peak_mb": 2951.5546875,
+    "results": {
+        "vectors": 1000000,
+        "dim": 128,
+        "queries": 10000,
+        "params": {
+            "M": 16,
+            "ef_construction": 200,
+            "ef_search": 128,
+            "seed": 123
+        },
+        "build_latency": 211.23485670900027,
+        "search_avg_latency": 0.002584092993610356,
+        "search_p50_latency": 0.002526639850020729,
+        "search_p95_latency": 0.0032849890796296673,
+        "search_p99_latency": 0.006860847876103439,
+        "qps": 388.9043387605419,
+        "search_wall_time": 26.261635177500104,
+        "recall@10": 0.9957010000000001,
+        "build_mem_peak_mb": 2951.5546875,
+        "search_mem_peak_mb_avg": 2525.946875
+    }
+}

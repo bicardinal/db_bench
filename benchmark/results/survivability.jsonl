@@ -1,0 +1,15 @@
+{"database":"brinicle","dataset":"mnist-784","ram_mb":256,"cpus":1.0,"status":"pass"}
+{"database":"qdrant","dataset":"mnist-784","ram_mb":256,"cpus":1.0,"status":"oomkilled"}
+{"database":"weaviate","dataset":"mnist-784","ram_mb":256,"cpus":1.0,"status":"oomkilled"}
+{"database":"chroma","dataset":"mnist-784","ram_mb":256,"cpus":1.0,"status":"pass"}
+{"database":"milvus","dataset":"mnist-784","ram_mb":256,"cpus":1.0,"status":"pass"}
+{"database":"brinicle","dataset":"fashion-mnist-784","ram_mb":512,"cpus":2.0,"status":"pass"}
+{"database":"qdrant","dataset":"fashion-mnist-784","ram_mb":512,"cpus":2.0,"status":"pass"}
+{"database":"weaviate","dataset":"fashion-mnist-784","ram_mb":512,"cpus":2.0,"status":"pass"}
+{"database":"chroma","dataset":"fashion-mnist-784","ram_mb":512,"cpus":2.0,"status":"pass"}
+{"database":"milvus","dataset":"fashion-mnist-784","ram_mb":512,"cpus":2.0,"status":"oomkilled"}
+{"database":"brinicle","dataset":"sift-128","ram_mb":2048,"cpus":2.0,"status":"pass"}
+{"database":"qdrant","dataset":"sift-128","ram_mb":2048,"cpus":2.0,"status":"pass"}
+{"database":"weaviate","dataset":"sift-128","ram_mb":2048,"cpus":2.0,"status":"pass"}
+{"database":"chroma","dataset":"sift-128","ram_mb":2048,"cpus":2.0,"status":"pass"}
+{"database":"milvus","dataset":"sift-128","ram_mb":2048,"cpus":2.0,"status":"pass"}

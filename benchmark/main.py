@@ -829,8 +829,10 @@ def main():
 			batch_results["search_p99_latency"] += results["search_p99_latency"]
 			batch_results["qps"] += results["qps"]
 			batch_results["search_wall_time"] += results["search_wall_time"]
+			batch_results["recall@10"] += results["recall@10"] # recall changes for each iteration in some dbs
 		else:
 			batch_results = results
+		print("[search] recall: ", results["recall@10"])
 
 	# Average the results
 	batch_results["build_mem_peak_mb"] = build_peak_mb
@@ -841,8 +843,10 @@ def main():
 	batch_results["search_p99_latency"] /= try_size
 	batch_results["qps"] /= try_size
 	batch_results["search_wall_time"] /= try_size
+	batch_results["recall@10"] /= try_size
 
-	output_dir = Path("benchmark/point_results")
+	# output_dir = Path("benchmark/point_results")
+	output_dir = Path("benchmark/curve_results")
 	output_dir.mkdir(parents=True, exist_ok=True)
 
 	base_filename = f"dbs_{args.db}_{args.dataset}_{args.m}m_{args.efc}efc_{args.efs}efs"

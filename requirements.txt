@@ -9,3 +9,4 @@ weaviate-client
 qdrant-client
 faiss-cpu
 hnswlib
+matplotlib
