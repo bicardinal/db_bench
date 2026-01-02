@@ -138,12 +138,12 @@ taskset -c 2 python -m benchmark.embed_bench --engine brinicle --dataset mnist-7
 
 **Test Qdrant with GIST dataset:**
 ```bash
-python benchmark.main --db qdrant --dataset gist-960 --m 32 --efc 400 --efs 100
+python -m benchmark.main --db qdrant --dataset gist-960 --m 32 --efc 400 --efs 100
 ```
 
 **Test FAISS with Fashion-MNIST:**
 ```bash
-python benchmark/embed_bench.py --engine faiss --dataset fashion-mnist-784 --m 16 --efc 200
+python -m benchmark.embed_bench.py --engine faiss --dataset fashion-mnist-784 --m 16 --efc 200
 ```
 
 **Run with limited queries (faster testing):**

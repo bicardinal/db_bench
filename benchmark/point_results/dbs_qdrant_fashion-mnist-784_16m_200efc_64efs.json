@@ -4,8 +4,8 @@
     "m": 16,
     "ef_search": 64,
     "ef_construction": 200,
-    "build_latency": 19.107286641999963,
-    "build_mem_peak_mb": 512.1953125,
+    "build_latency": 14.827561133000017,
+    "build_mem_peak_mb": 512.0,
     "results": {
         "vectors": 60000,
         "dim": 784,
@@ -14,18 +14,17 @@
             "M": 16,
             "ef_construction": 200,
             "ef_search": 64,
-            "seed": 123,
-            "k_base": -1
+            "seed": 123
         },
-        "build_latency": 19.107286641999963,
-        "search_avg_latency": 0.002299330914392412,
-        "search_p50_latency": 0.001764427799571422,
-        "search_p95_latency": 0.004527245540175499,
-        "search_p99_latency": 0.008045868233919468,
-        "qps": 453.53885927924404,
-        "search_wall_time": 23.282099568699778,
-        "recall@10": 0.99782,
-        "build_mem_peak_mb": 512.1953125,
-        "search_mem_peak_mb_avg": 277.570703125
+        "build_latency": 14.827561133000017,
+        "search_avg_latency": 0.0015786600113397709,
+        "search_p50_latency": 0.0011734325998986606,
+        "search_p95_latency": 0.003441426205108653,
+        "search_p99_latency": 0.006946960484974625,
+        "qps": 690.3780971541707,
+        "search_wall_time": 15.980143955399944,
+        "recall@10": 0.9979089999999999,
+        "build_mem_peak_mb": 512.0,
+        "search_mem_peak_mb_avg": 282.800390625
     }
 }
