@@ -119,11 +119,18 @@ def run_benchmark_brinicle_build(X, args):
 			index_name=idx_name,
 			ids=ids[b:b+batch_size],
 			vectors=X[b:b+batch_size],
-		)
+		),
 		print("batch idx:", b, end='\r')
 	client.finalize(idx_name)
 	build_latency = time.perf_counter() - t0
 	print(f"[build] Done in {build_latency:.3f}s.")
+	if args.delete:
+		to_remove = ids[int(0.9*len(ids)):]
+		client.delete_items(
+			index_name=idx_name,
+			external_ids=to_remove,
+		)
+		print(f"[delete] Deleted 10% of data from the index")
 	return build_latency
 
 
@@ -204,6 +211,7 @@ def run_benchmark_qdrant_build(X, args):
 		vectors_config=VectorParams(size=X.shape[1], distance=Distance.EUCLID),
 		hnsw_config=HnswConfigDiff(m=args.m, ef_construct=args.efc),
 	)
+	ids = list(range(X.shape[0]))
 	t0 = time.perf_counter()
 	client.upload_collection(
 		collection_name="bench",
@@ -215,6 +223,13 @@ def run_benchmark_qdrant_build(X, args):
 	)
 	build_latency = time.perf_counter() - t0
 	print(f"[build] Done in {build_latency:.3f}s.")
+	if args.delete:
+		to_remove = ids[int(0.9*len(ids)):]
+		client.delete(
+			collection_name="bench",
+			points_selector=to_remove,
+		)
+		print(f"[delete] Deleted 10% of data from the index")
 	return build_latency
 
 
@@ -312,11 +327,11 @@ def run_benchmark_chroma_build(X, args):
 			"hnsw:search_ef": args.efs,
 		}
 	)
-	t0 = time.perf_counter()
 	ids = [str(i) for i in range(X.shape[0])]
-	embeddings = X.tolist()
-
 	batch_size = 4096
+	embeddings = X.tolist()
+	t0 = time.perf_counter()
+
 	for i in range(0, len(ids), batch_size):
 		batch_ids = ids[i:i + batch_size]
 		batch_embeddings = embeddings[i:i + batch_size]
@@ -327,7 +342,12 @@ def run_benchmark_chroma_build(X, args):
 
 	build_latency = time.perf_counter() - t0
 	print(f"[build] Done in {build_latency:.3f}s.")
+	if args.delete:
+		to_remove = ids[int(0.9*len(ids)):]
+		collection.delete(ids=to_remove)
+		print(f"[delete] Deleted 10% of data from the index")
 	return build_latency
+
 
 def run_benchmark_chroma_search(Q, GT, args, build_latency, N, dim):
 	print(f"[search] K={K}")
@@ -439,6 +459,11 @@ def run_benchmark_weaviate_build(X, args):
 
 		build_latency = time.perf_counter() - t0
 		print(f"[build] Done in {build_latency:.3f}s.")
+		if args.delete:
+			delete_start = int(0.9 * n)
+			for i in range(delete_start, n):
+				collection.data.delete_by_id(uuid=generate_uuid5(i))
+			print(f"[delete] Deleted 10% of data from the index")
 		return build_latency
 	finally:
 		client.close()
@@ -535,7 +560,6 @@ def run_benchmark_milvus_build(X, args):
 	)
 	if pymilvus.utility.has_collection(collection_name):
 		pymilvus.utility.drop_collection(collection_name)
-
 	fields = [
 		pymilvus.FieldSchema(name="id", dtype=pymilvus.DataType.INT64, is_primary=True, auto_id=False),
 		pymilvus.FieldSchema(name="embedding", dtype=pymilvus.DataType.FLOAT_VECTOR, dim=dim, mmap_enabled=True)
@@ -545,15 +569,12 @@ def run_benchmark_milvus_build(X, args):
 	collection = pymilvus.Collection(collection_name)
 	print(f"[build] Inserting {X.shape[0]} vectors...")
 	t0 = time.perf_counter()
-
 	batch_size = 5000 
 	for i in range(0, X.shape[0], batch_size):
 		end = min(i + batch_size, X.shape[0])
 		ids = list(range(i, end))
 		embeddings = X[i:end].tolist()
 		collection.insert([ids, embeddings])
-
-
 	print(f"[build] Creating HNSW index (M={args.m}, efc={args.efc})...")
 	index_params = {
 		"metric_type": "L2",
@@ -561,11 +582,17 @@ def run_benchmark_milvus_build(X, args):
 		"params": {"M": args.m, "efConstruction": args.efc, "mmap.enabled": "true"}
 	}
 	collection.create_index(field_name="embedding", index_params=index_params)
-
 	collection.load()
-
 	build_latency = time.perf_counter() - t0
 	print(f"[build] Done in {build_latency:.3f}s.")
+	
+	if args.delete:
+		delete_start = int(0.9 * X.shape[0])
+		ids_to_remove = list(range(delete_start, X.shape[0]))
+		expr = f"id in {ids_to_remove}"
+		collection.delete(expr)
+		print(f"[delete] Deleted 10% of data from the index")
+	
 	return build_latency
 
 
@@ -673,6 +700,7 @@ def run_benchmark_lancedb_build(X, args):
 	)
 	build_latency = time.perf_counter() - t0
 	print(f"[build] Done in {build_latency:.3f}s.")
+	# TODO: add delete structure here
 	return build_latency
 
 
@@ -755,6 +783,7 @@ def main():
 	p.add_argument("--efs", type=int, default=64, help="ef_search")
 	p.add_argument("--max-queries", type=int, default=10000)
 	p.add_argument("--sample", action="store_true", help="randomly sample queries instead of first N")
+	p.add_argument("--delete", action="store_true", help="Intentionally remove 10 percent of the data tail after build")
 	p.add_argument("--seed", type=int, default=123)
 	args = p.parse_args()
 
@@ -775,6 +804,9 @@ def main():
 	print(f"[load] X: {X.shape} float32, Q: {Q.shape} float32, GT: {GT.shape} int32")
 	print("[db] ", args.db)
 
+	if args.delete:
+		print(f"[delete] Checking the delete scenario")
+
 	container_name = container_names.get(args.db, f"{args.db}_bench")
 
 	mon = CgroupMemoryMonitor(container_name=container_name, interval_s=0.01).start()
@@ -792,6 +824,7 @@ def main():
 		build_latency = run_benchmark_lancedb_build(X, args)
 	else:
 		raise Exception("db name does not exist")
+
 	mon.stop()
 	build_peak_mb = mon.peak_bytes / (1024 * 1024)
 
@@ -803,7 +836,6 @@ def main():
 	search_peak_avg = 0.0
 	for trial in range(try_size):
 		mon = CgroupMemoryMonitor(container_name=container_name, interval_s=0.01).start()
-
 		if args.db == "qdrant":
 			results = run_benchmark_qdrant_search(Q, GT, args, build_latency, N, dim)
 		elif args.db == "brinicle":
@@ -845,8 +877,8 @@ def main():
 	batch_results["search_wall_time"] /= try_size
 	batch_results["recall@10"] /= try_size
 
-	# output_dir = Path("benchmark/point_results")
-	output_dir = Path("benchmark/curve_results")
+	output_dir = Path("benchmark/point_results" if not args.delete else "benchmark/point_results_delete")
+	# output_dir = Path("benchmark/curve_results")
 	output_dir.mkdir(parents=True, exist_ok=True)
 
 	base_filename = f"dbs_{args.db}_{args.dataset}_{args.m}m_{args.efc}efc_{args.efs}efs"
@@ -866,7 +898,6 @@ def main():
 	with open(json_path, 'w') as f:
 		json.dump(output_data, f, indent=4)
 	print(f"\n[save] Results saved to {json_path}")
-
 
 	print(json.dumps(output_data, indent=4))
 
