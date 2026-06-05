@@ -102,7 +102,7 @@ def plot_recall_latency_tradeoff(
 
 	plt.tight_layout()
 
-	plt.savefig("./plots/latency_recall_curve.png", dpi=900, bbox_inches='tight')
+	plt.savefig("./plots/latency_recall_curve.png", dpi=300, bbox_inches='tight')
 
 
 def plot_memory_usage(

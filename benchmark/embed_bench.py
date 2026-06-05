@@ -99,6 +99,7 @@ def run_benchmark_brinicle_build(X, args):
 	print(f"[build] Done in {build_latency:.3f}s.")
 	return build_latency
 
+
 def run_benchmark_brinicle_search(Q, GT, args, build_latency, N, dim):
 	print(f"[search] K={K}")
 	index = "brinicle_bench_sift"
@@ -173,6 +174,7 @@ def run_benchmark_hnswlib_build(X, args):
 	hnsw_index.add_items(X, ids)
 	build_latency = time.perf_counter() - t0
 	hnsw_index.set_ef(args.efs)
+	hnsw_index.set_num_threads(1)
 	print(f"[build] Done in {build_latency:.3f}s.")
 	return build_latency, hnsw_index
 
@@ -248,7 +250,7 @@ def run_benchmark_faiss_build(X, args):
 
 	print(f"[build] Creating FAISS HNSW(M={args.m}, efc={args.efc}, efs={args.efs})")
 
-	index = faiss.IndexHNSWFlat(dim, args.m)
+	index = faiss.IndexHNSWFlat(dim, args.m, faiss.METRIC_L2)
 	index.hnsw.efConstruction = args.efc
 
 	t0 = time.perf_counter()
@@ -256,7 +258,7 @@ def run_benchmark_faiss_build(X, args):
 	build_latency = time.perf_counter() - t0
 
 	index.hnsw.efSearch = args.efs
-
+	faiss.omp_set_num_threads(1)
 	print(f"[build] Done in {build_latency:.3f}s.")
 	return index, build_latency
 
@@ -480,12 +482,18 @@ def main():
 			batch_results["search_avg_latency"] += results["search_avg_latency"]
 			batch_results["qps"] += results["qps"]
 			batch_results["search_wall_time"] += results["search_wall_time"]
+			batch_results["search_p50_latency"] += results["search_p50_latency"]
+			batch_results["search_p95_latency"] += results["search_p95_latency"]
+			batch_results["search_p99_latency"] += results["search_p99_latency"]
 		else:
 			batch_results = results
 
 	batch_results["search_avg_latency"] /= try_size
 	batch_results["qps"] /= try_size
 	batch_results["search_wall_time"] /= try_size
+	batch_results["search_p50_latency"] /= try_size
+	batch_results["search_p95_latency"] /= try_size
+	batch_results["search_p99_latency"] /= try_size
 
 	print(json.dumps(batch_results, indent=2))
 
