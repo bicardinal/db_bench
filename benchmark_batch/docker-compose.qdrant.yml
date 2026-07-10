@@ -1,0 +1,24 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.18.2
+    container_name: qdrant_bench
+
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+
+    environment:
+      QDRANT__LOG_LEVEL: "INFO"
+      QDRANT__STORAGE__PERFORMANCE__ASYNC_SCORER: "true"
+
+    cpus: 2.0
+    mem_limit: 2g
+    memswap_limit: 2g
+
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576

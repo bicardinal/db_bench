@@ -1,5 +1,5 @@
 benchmark/data/*
-
+data/*
 *.lock
 *.main
 _*.py

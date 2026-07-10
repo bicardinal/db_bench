@@ -17,6 +17,7 @@ class VectorEngineClient:
 		ef_construction: int = 200,
 		ef_search: int = 64,
 		M: int = 16,
+		build_n_threads: int = 2,
 		seed: int = 0,
 	) -> Dict[str, Any]:
 		payload = {
@@ -29,6 +30,7 @@ class VectorEngineClient:
 			"ef_search": ef_search,
 			"M": M,
 			"rng_seed": seed,
+			"build_n_threads": build_n_threads,
 		}
 
 		response = self.session.post(f"{self.base_url}/indexes", json=payload)
@@ -88,26 +90,35 @@ class VectorEngineClient:
 	def ingest_batch_binary(
 		self,
 		index_name: str,
-		ids: List,
+		ids: List[str],
 		vectors: np.ndarray,
 	) -> Dict[str, Any]:
-		payload = b""
-		for vid, vec in enumerate(vectors):
-			id_bytes = ids[vid].encode('ascii')[:32].ljust(32, b'\x00')
-			payload += id_bytes
+		vectors = np.asarray(vectors, dtype="<f4", order="C")
 
-			if not isinstance(vec, np.ndarray):
-				vec = np.array(vec, dtype=np.float32)
-			elif vec.dtype != np.float32:
-				vec = vec.astype(np.float32)
+		if vectors.ndim != 2:
+			raise ValueError("vectors must be a 2D array")
 
-			payload += vec.tobytes()
+		n, dim = vectors.shape
+
+		if len(ids) != n:
+			raise ValueError(
+				f"Expected {n} ids for {n} vectors, got {len(ids)}"
+			)
+
+		dtype = np.dtype([
+			("external_id", "S32"),
+			("vector", "<f4", (dim,)),
+		])
+
+		records = np.empty(n, dtype=dtype)
+		records["external_id"] = np.asarray(ids, dtype="S32")
+		records["vector"] = vectors
 
 		response = self.session.post(
 			f"{self.base_url}/ingest/batch",
 			params={"index_name": index_name},
-			data=payload,
-			headers={"Content-Type": "application/octet-stream"}
+			data=records.tobytes(),
+			headers={"Content-Type": "application/octet-stream"},
 		)
 		response.raise_for_status()
 		return orjson.loads(response.content)
@@ -165,13 +176,36 @@ class VectorEngineClient:
 		efs: int = 64
 	) -> List[str]:
 		r = self.session.post(
-		    f"{self.base_url}/search.bin",
-		    params={"index_name": index_name, "k": k, "efs": efs},
-		    data=query.tobytes(),
-		    headers={"Content-Type": "application/octet-stream"},
+			f"{self.base_url}/search.bin",
+			params={"index_name": index_name, "k": k, "efs": efs},
+			data=query.tobytes(),
+			headers={"Content-Type": "application/octet-stream"},
 		)
 		neighbors = r.json()
 		return neighbors
+
+	def search_batch(
+		self,
+		index_name: str,
+		queries: np.ndarray,
+		k: int = 10,
+		efs: int = 64,
+		n_jobs: int = 1,
+	) -> List[List[str]]:
+
+		if not isinstance(queries, np.ndarray):
+			queries = np.asarray(queries, dtype=np.float32)
+		if queries.dtype != np.float32:
+			queries = queries.astype(np.float32)
+		queries = np.ascontiguousarray(queries)
+		r = self.session.post(
+			f"{self.base_url}/search/batch.bin",
+			params={"index_name": index_name, "k": k, "efs": efs, "n_jobs": n_jobs},
+			data=queries.tobytes(),
+			headers={"Content-Type": "application/octet-stream"},
+		)
+		r.raise_for_status()
+		return r.json()
 
 	def optimize(self, index_name: str) -> Dict[str, Any]:
 		payload = orjson.dumps({"index_name": index_name})

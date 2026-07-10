@@ -54,7 +54,7 @@ container_names = {
 }
 
 
-DEFAULT_DATA_DIR = Path("./benchmark/data")
+DEFAULT_DATA_DIR = Path("./data")
 K = 10
 
 

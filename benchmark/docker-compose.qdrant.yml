@@ -1,0 +1,14 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.18.2
+    container_name: qdrant_batch_bench
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - ./qdrant_storage:/qdrant/storage
+    environment:
+      # Critical for disk-heavy rescoring. Without this, congratulations, you benchmarked waiting.
+      QDRANT__STORAGE__PERFORMANCE__ASYNC_SCORER: "true"
+      # Keep telemetry out of benchmark noise.
+      QDRANT__TELEMETRY_DISABLED: "true"
